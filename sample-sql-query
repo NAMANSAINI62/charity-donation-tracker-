@@ -1,0 +1,118 @@
+## 🧠 SQL Highlights
+
+Here are some sample SQL operations included in the project:
+
+1. **Donors with donation > ₹500**
+```sql
+SELECT donor_id, name, email, phone, address
+FROM donors
+WHERE donor_id IN (
+    SELECT donor_id FROM donations WHERE amount > 500
+);
+```
+
+2. **Total Donations Per Campaign**
+```sql
+SELECT c.campaign_id, c.title, SUM(d.amount) AS total_donated
+FROM campaigns c
+JOIN donations d ON c.campaign_id = d.campaign_id
+GROUP BY c.campaign_id, c.title
+ORDER BY total_donated DESC;
+```
+
+3. **Campaigns That Reached at Least 75% of Their Goal**
+```sql
+SELECT title, goalamount, 
+       (SELECT SUM(amount) FROM donations WHERE campaignid = c.campaignid) AS total_raised,
+       ROUND(((SELECT SUM(amount) FROM donations WHERE campaignid = c.campaignid)/goalamount)*100, 2) AS percent_achieved
+FROM campaigns c
+HAVING percent_achieved >= 75;
+```
+
+4. **Donors Who Haven’t Received a Receipt**
+```sql
+SELECT d.donor_id, d.name
+FROM donors d
+JOIN donations dn ON d.donor_id = dn.donor_id
+LEFT JOIN donation_receipts r ON dn.donation_id = r.donation_id
+WHERE r.receipt_id IS NULL;
+```
+
+5. **Donations Made in the Last 30 Days**
+```sql
+SELECT * FROM donations
+WHERE date >= CURRENT_DATE - INTERVAL 30 DAY;
+```
+
+6. **Donation Count and Total by Payment Method**
+```sql
+SELECT paymentmethod, COUNT(*) AS num_donations, SUM(amount) AS total_amount
+FROM donations
+GROUP BY paymentmethod;
+```
+
+7. **Thank You Notes Sent to Donors**
+```sql
+SELECT d.name, t.note_text, t.note_sent_date
+FROM thank_you_notes t
+JOIN donors d ON t.donor_id = d.donor_id;
+```
+
+8. **Active Recurring Donors**
+```sql
+SELECT donor_id, amount, donation_frequency, start_date
+FROM recurring_donations
+WHERE is_active = TRUE;
+```
+
+9. **Total Allocated Funds per Beneficiary**
+```sql
+SELECT b.name, SUM(f.allocated_amount) AS total_allocated
+FROM beneficiaries b
+JOIN fund_allocation f ON b.beneficiary_id = f.beneficiary_id
+GROUP BY b.name;
+```
+
+10. **Social Media Shares by Platform**
+```sql
+SELECT platform, COUNT(*) AS total_shares
+FROM social_media_shares
+GROUP BY platform;
+```
+
+11. **Campaigns With Updates and Their Titles**
+```sql
+SELECT c.title AS campaign_name, u.update_title, u.update_date
+FROM campaign_updates u
+JOIN campaigns c ON u.campaign_id = c.campaign_id;
+```
+
+12. **Donor Testimonials and Approval Status**
+```sql
+SELECT d.name, dt.testimonial_text, dt.is_approved
+FROM donor_testimonials dt
+JOIN donors d ON dt.donor_id = d.donor_id;
+```
+
+13. **Refunded Donations and Reasons**
+```sql
+SELECT r.donation_id, r.refund_amount, r.refund_reason, r.refund_date
+FROM donation_refunds r;
+```
+
+14. **Average Donation Amount Per Campaign**
+```sql
+SELECT campaign_id, AVG(amount) AS avg_donation
+FROM donations
+GROUP BY campaign_id;
+```
+
+15. **Most Generous Donors (Top 5 by Total Donations)**
+```sql
+SELECT d.donor_id, d.name, SUM(dn.amount) AS total_donated
+FROM donors d
+JOIN donations dn ON d.donor_id = dn.donor_id
+GROUP BY d.donor_id, d.name
+ORDER BY total_donated DESC
+LIMIT 5;
+```
